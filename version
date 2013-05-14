@@ -1,0 +1,12 @@
+ID: dbcache
+Name: Caching database queries
+Version: 0.1
+Actions: mysql; dbcache.php
+Config: config.php
+Type: plugin
+Title: Кэширование запросов к базе данных
+Description: Плагин позволяет выполнять кэширование запросов к базе данных в файлы или memcache
+Information: Плагин позволяет выполнять кэширование запросов к базе данных в файлы или memcache
+Author: Roman Kapanets (Mauhem/Mark)
+Author_URI: http://wm-talk.net/
+preinstall: no
