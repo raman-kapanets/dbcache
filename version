@@ -1,6 +1,6 @@
 ID: dbcache
 Name: Caching database queries
-Version: 0.1
+Version: 0.2
 Actions: mysql; dbcache.php
 Config: config.php
 Type: plugin

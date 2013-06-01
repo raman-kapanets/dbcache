@@ -4,20 +4,13 @@ if(!defined('NGCMS')) exit('HAL');
 plugins_load_config();
 LoadPluginLang('dbcache', 'config', '', '', ':');
 
-/*switch ($_REQUEST['action']) {
-	case 'list_menu': showlist(); break;
-	case 'add_form': add(); break;
-	case 'move_up': move('up'); showlist(); break;
-	case 'move_down': move('down'); showlist(); break;
-	case 'dell': delete(); break;
-	case 'general_submit': general_submit(); main(); break;
-	case 'clear_cash': clear_cash();
+switch ($_REQUEST['action']) {
+        case 'clear_cache': clear_cache();
 	default: main();
-}*/
+}
 
-
-//function main(){
-//  global $lang, $cfg, $plugin;
+function main(){
+    global $lang, $cfg, $plugin;
     $cfg = array();
     array_push($cfg, array('descr' => $lang['dbcache:description']));
     array_push($cfg, array('name' => 'typecache', 
@@ -35,7 +28,7 @@ LoadPluginLang('dbcache', 'config', '', '', ':');
         array_push($cfgX, array('name' => 'port', 'title' => $lang['dbcache:port_title'], 'descr' => $lang['dbcache:port_descr'], 'html_flags' => 'size=20', 'type' => 'input', 'value' => intval(pluginGetVariable($plugin,'port'))?pluginGetVariable($plugin,'port'):'11211'));
         array_push($cfg,  array('mode' => 'group', 'title' => $lang['dbcache:group_descr'], 'entries' => $cfgX));
     }
-    
+    array_push($cfg, array('input' => '<input value="'.$lang['dbcache:flush_cache'].'" class="button" onclick="document.forms[\'form\'].action.value = \'clear_cache\';" type="submit">', 'type' => 'manual'));
 // RUN
     if ($_REQUEST['action'] == 'commit') {
             // If submit requested, do config save
@@ -45,5 +38,27 @@ LoadPluginLang('dbcache', 'config', '', '', ':');
             generate_config_page($plugin, $cfg);
     }
     
-//}
-main();
+}
+function clear_cache(){
+    global $plugin;
+    if (($f = get_plugcache_dir($plugin))){
+        $scdir = scandir($f);
+        foreach ($scdir as $file){
+            @unlink($f.$file);
+        }
+    }
+    if ((extension_loaded("memcache")) || (extension_loaded("memcached"))){
+        $server = pluginGetVariable('dbcache', 'server');
+        if (extension_loaded("memcache")){
+                $mem = new Memcache();
+                if (@$mem->connect((empty($server) ? 'localhost' : $server), (intval(pluginGetVariable('dbcache', 'port')) ? intval(pluginGetVariable('dbcache', 'port')) : '11211'))) {
+                    $mem->flush();
+                    $mem->close();
+                }
+        }elseif (extension_loaded("memcached")) {
+                $mem = new Memcached();
+                $mem->addServer((empty($server) ? 'localhost' : $server), (intval(pluginGetVariable('dbcache', 'port')) ? intval(pluginGetVariable('dbcache', 'port')) : '11211'));
+                @$mem->flush();
+        }
+    }
+}
